@@ -52,7 +52,7 @@ final class CredentialStoreFactory implements ExceptionSupplier<CredentialStore,
      * Creates a factory using parameters.
      *
      * @param name the non {@code null} name of the {@link CredentialStore}
-     * @param type the possibly {@code null} type of the {@link CredentialStore)
+     * @param type the possibly {@code null} type of the {@link CredentialStore}
      * @param attributes the non {@code null} attributes to initialise the {@code CredentialStore}
      * @param providerName the possibly {@code null} name of the provider to use
      * @param location the non {@code null} current parse location
@@ -81,10 +81,11 @@ final class CredentialStoreFactory implements ExceptionSupplier<CredentialStore,
         try {
             if (providers != null) {
                 credentialStore = providerName != null ? CredentialStore.getInstance(type, providerName, providers) : CredentialStore.getInstance(type, providers);
+                credentialStore.initialize(attributes, credentialSource == null ? null : new CredentialStore.CredentialSourceProtectionParameter(credentialSource.get()), providers.get());
             } else {
                 credentialStore = providerName != null ? CredentialStore.getInstance(type, providerName) : CredentialStore.getInstance(type);
+                credentialStore.initialize(attributes, credentialSource == null ? null : new CredentialStore.CredentialSourceProtectionParameter(credentialSource.get()));
             }
-            credentialStore.initialize(attributes, credentialSource == null ? null : new CredentialStore.CredentialSourceProtectionParameter(credentialSource.get()));
         } catch (GeneralSecurityException e) {
             throw xmlLog.xmlFailedToCreateCredentialStore(location, e);
         }
