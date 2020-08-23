@@ -22,19 +22,18 @@ import static org.wildfly.common.Assert.checkNotNullParam;
 import static org.wildfly.common.Assert.checkMinimumParameter;
 import static org.wildfly.common.Assert.checkMaximumParameter;
 
-import java.io.IOException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.OutputStream;
 import java.io.InputStream;
 
 import java.net.Socket;
-	
+
 
 /**
- * A decoder to obtain role information using the source IP address runtime attribute from the identity, 
+ * A decoder to obtain role information using the source IP address runtime attribute from the identity,
  * by analysing the risk associated with it
- *  
+ *
  * @author <a href="mailto:piyush.palta@outlook.com">Piyush Palta</a>
  */
 
@@ -45,7 +44,7 @@ public class RiskRoleDecoder implements RoleDecoder {
     private String riskAnalyzerAddress;
     private int riskAnalyzerPort;
     private Roles roles;
-    
+
     /**
      * Construct a new instance.
      *
@@ -69,7 +68,7 @@ public class RiskRoleDecoder implements RoleDecoder {
      *
      * @param roles the roles to associate with the identity if the source IP address is within threshold risk
      * @param riskAnalyzerAddress the IP address of risk analyzer server
-     * @param riskAnalyzerPort the port number of risk analyzer server, must be >=1 and <=65535 
+     * @param riskAnalyzerPort the port number of risk analyzer server, must be >=1 and <=65535
      * @param riskThreshold the threshold risk above which roles won't be assigned, must be within range 0 to 100
      */
     public RiskRoleDecoder(Roles roles, String riskAnalyzerAddress, int riskAnalyzerPort, int riskThreshold){
@@ -85,8 +84,8 @@ public class RiskRoleDecoder implements RoleDecoder {
         this.riskAnalyzerPort=riskAnalyzerPort;
         this.riskThreshold=riskThreshold;
     }
-    
-    
+
+
     /**
      * Calculate Risk Score based on the source address to make authorization decision
      *
@@ -94,19 +93,22 @@ public class RiskRoleDecoder implements RoleDecoder {
      * @return the risk score ({@code float})
      */
     private int calculateRiskScore(String sourceAddress) {
+        try{
         Socket socket=new Socket(riskAnalyzerAddress,riskAnalyzerPort);
-        
+
         OutputStream output= socket.getOutputStream();
         DataOutputStream out = new DataOutputStream(output);
         out.writeUTF(sourceAddress);
-        
+
         InputStream input = socket.getInputStream();
         DataInputStream in = new DataInputStream(input);
-        String line = in.readUTF();  
-        
-        socket.close();  
-        
+        String line = in.readUTF();
+
+        socket.close();
         riskScore = Integer.parseInt(line);
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
         return riskScore;
     }
 
@@ -129,3 +131,4 @@ public class RiskRoleDecoder implements RoleDecoder {
         return Roles.NONE;
     }
 }
+
